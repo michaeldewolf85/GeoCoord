@@ -1,2 +1,4 @@
+# Ignore vagrant config files because they are only used for local dev.
 vagrant
 .vagrant
+Vagrantfile
