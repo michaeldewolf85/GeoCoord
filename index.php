@@ -68,7 +68,14 @@ class Points implements PointsInterface {
     
     $row_num = round($x / $this->options['x_increm']);
     $col_num = round($y / $this->options['y_increm']);
-    return $this->points["{$row_num}:{$col_num}"];
+    $next_row_num = $row_num < $max_index ? $row_num + 1 : $row_num - 1;
+    $next_col_num = $col_num < $max_index ? $col_num + 1 : $col_num - 1;
+
+    $data = new stdClass();
+    $data->closestPoint = $this->points["{$row_num}:{$col_num}"];
+    $data->swingX = $this->points["{$next_row_num}:{$col_num}"];
+    $data->swingY = $this->points["{$row_num}:{$next_col_num}"];
+    return $data;
   }
 
 }
