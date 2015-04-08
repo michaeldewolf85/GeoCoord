@@ -94,6 +94,8 @@ class Points implements PointsInterface {
   private function crunch($x, $y) {
     // Subtract one b/c the row and column keys start at 0.
     $max_index = $this->options['grid_size'] - 1;
+    // All of the calculations assume that x and y are in the grid, so we need
+    // to throw an exception if they are not.
     if ($x > $max_index * $this->options['x_increm'] ||
         $y > $max_index * $this->options['y_increm']
     ) {
