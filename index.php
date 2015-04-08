@@ -1,7 +1,5 @@
 <?php
-print '<pre>';
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
+
 /**
  * @file
  * The Geocord.
@@ -139,7 +137,7 @@ class Points implements PointsInterface {
 }
 
 
-$a = new Points(
+$points = new Points(
   array(
     'grid_size' => 5,
     'x_increm' => 0.5,
@@ -147,5 +145,4 @@ $a = new Points(
     'accuracy' => 10,
   ));
 
-$b = $a->fetch(1.2, 2.62);
-var_dump($b);
+$data = $points->fetch(1.2, 2.62);
