@@ -44,34 +44,33 @@ class Points implements PointsInterface {
    $this->options = $options;
    for ($i = 0; $i < $options['grid_size']; $i++) {
      for ($j = 0; $j < $options['grid_size']; $j++) {
-        $this->points[] = array(
+        $this->points["{$i}:{$j}"] = array(
           'row' => $i,
           'column' => $j,
+          'value' => rand(0, 100),
         );
       } 
     }
   }
 
   /**
-   * Given a set of geocoordinates, retrieve aggregate point data from all 
+   * Given a set of geo-coordinates, retrieve aggregate point data from all 
    * available points.
    */
   public function fetch($x, $y) {
-
-    if ($x > $this->options['grid_size'] * $this->options['x_increm'] ||
-        $y > $this->options['grid_size'] * $this->options['y_increm']
+    // Subtract one b/c the row and column keys start at 0.
+    $max_index = $this->options['grid_size'] - 1;
+    if ($x > $max_index * $this->options['x_increm'] ||
+        $y > $max_index * $this->options['y_increm']
     ) {
       throw new InvalidArgumentException('Invalid coordinates'); 
     }
-
+    
+    $row_num = round($x / $this->options['x_increm']);
+    $col_num = round($y / $this->options['y_increm']);
+    return $this->points["{$row_num}:{$col_num}"];
   }
 
-  /**
-   * Helper that builds a single cell.
-   */
-  private function genCell($options) {
-
-  }
 }
 
 
@@ -82,4 +81,5 @@ $a = new Points(
     'y_increm' => 0.67,
   ));
 
-$a->fetch(1, 25);
+$b = $a->fetch(1.5, 2.62);
+var_dump($b);
