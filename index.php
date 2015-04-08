@@ -13,6 +13,15 @@ interface PointsInterface {
   /**
    * Given a set of geocoordinates, retrieve aggregate point data from all 
    * available points.
+   *
+   * @param float $x
+   *  The x coordinate of the point to fetch.
+   * @param float $y 
+   *  The y coordinate of the point to fetch.
+   *
+   * @return stdClass
+   *  Data on the point including the three closest points, and a weighted
+   *  average for the points value.
    */
   public function fetch($x, $y);
 
@@ -64,8 +73,14 @@ class Points implements PointsInterface {
    * Given a set of geo-coordinates, retrieve aggregate point data from all 
    * available points.
    *
-   * @return object
-   *  Returns data on the point
+   * @param float $x
+   *  The x coordinate of the point to fetch.
+   * @param float $y 
+   *  The y coordinate of the point to fetch.
+   *
+   * @return stdClass
+   *  Data on the point including the three closest points, and a weighted
+   *  average for the points value.
    */
   public function fetch($x, $y) {
     $this->crunch($x, $y);
