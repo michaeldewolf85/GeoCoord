@@ -39,7 +39,7 @@ class Points implements PointsInterface {
    * @var array $options
    *  An array of options that controls how the Points operate.
    */
-  private $options;
+  private $options = array();
 
   /**
    * @var array points
