@@ -2,7 +2,7 @@
 
 /**
  * @file
- * The Geocord.
+ * The GeoCoord app.
  */ 
 
 /**
