@@ -40,13 +40,22 @@ class Points implements PointsInterface {
    */
   private $points = array();
 
+  /**
+   * @var object $data
+   *  Data on the point.
+   */
+  private $data;
+
   public function __construct($options) {
    $this->options = $options;
+   $this->data = new stdClass();
    for ($i = 0; $i < $options['grid_size']; $i++) {
      for ($j = 0; $j < $options['grid_size']; $j++) {
         $this->points["{$i}:{$j}"] = array(
           'row' => $i,
           'column' => $j,
+          'x' => $i * $options['x_increm'],
+          'y' => $j * $options['y_increm'],
           'value' => rand(0, 100),
         );
       } 
@@ -56,8 +65,20 @@ class Points implements PointsInterface {
   /**
    * Given a set of geo-coordinates, retrieve aggregate point data from all 
    * available points.
+   *
+   * @return object
+   *  Returns data on the point
    */
   public function fetch($x, $y) {
+    $this->crunch($x, $y);
+    return $this->data;
+  }
+
+  /**
+   * Given a set of geo-coordinates, retrieve aggregate point data from all 
+   * available points.
+   */
+  private function crunch($x, $y, $granularity = 10) {
     // Subtract one b/c the row and column keys start at 0.
     $max_index = $this->options['grid_size'] - 1;
     if ($x > $max_index * $this->options['x_increm'] ||
@@ -71,11 +92,33 @@ class Points implements PointsInterface {
     $next_row_num = $row_num < $max_index ? $row_num + 1 : $row_num - 1;
     $next_col_num = $col_num < $max_index ? $col_num + 1 : $col_num - 1;
 
-    $data = new stdClass();
-    $data->closestPoint = $this->points["{$row_num}:{$col_num}"];
-    $data->swingX = $this->points["{$next_row_num}:{$col_num}"];
-    $data->swingY = $this->points["{$row_num}:{$next_col_num}"];
-    return $data;
+    $data = &$this->data;
+    $data->closestPoint = $this->fetchPoint($this->points["{$row_num}:{$col_num}"], $x, $y);
+    $data->swingX = $this->fetchPoint($this->points["{$next_row_num}:{$col_num}"], $x, $y);
+    $data->swingY = $this->fetchPoint($this->points["{$row_num}:{$next_col_num}"], $x, $y);
+    $data->xFactor = round($data->closestPoint['distance'] / $data->swingX['distance'] * $granularity);
+    $data->yFactor = round($data->closestPoint['distance'] / $data->swingY['distance'] * $granularity);
+    $data->wa = ($granularity * $data->closestPoint['value'] + $data->xFactor * $data->swingX['value'] + $data->yFactor * $data->swingY['value']) / ($granularity + $data->xFactor + $data->yFactor);
+  }
+
+  /** 
+   * Helper function to populate point metadata.
+   *  
+   * @param array $point
+   *  The point to populate.
+   * @param float $x
+   *  The x coordinate of the reference point.
+   * @param float $y 
+   *  The y coordinate of the reference point.
+   *
+   * @return array $point
+   *  The updated point.
+   */
+  private function fetchPoint($point, $x, $y) {
+   $x_dist = abs($point['x'] - $x);
+   $y_dist = abs($point['y'] - $y);
+   $point['distance'] = sqrt(pow($x_dist, 2) + pow($y_dist, 2));
+   return $point;
   }
 
 }
@@ -88,5 +131,5 @@ $a = new Points(
     'y_increm' => 0.67,
   ));
 
-$b = $a->fetch(1.5, 2.62);
+$b = $a->fetch(1.2, 2.62);
 var_dump($b);
