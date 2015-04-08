@@ -78,7 +78,7 @@ class Points implements PointsInterface {
    * Given a set of geo-coordinates, retrieve aggregate point data from all 
    * available points.
    */
-  private function crunch($x, $y, $granularity = 10) {
+  private function crunch($x, $y) {
     // Subtract one b/c the row and column keys start at 0.
     $max_index = $this->options['grid_size'] - 1;
     if ($x > $max_index * $this->options['x_increm'] ||
@@ -96,9 +96,7 @@ class Points implements PointsInterface {
     $data->closestPoint = $this->fetchPoint($this->points["{$row_num}:{$col_num}"], $x, $y);
     $data->swingX = $this->fetchPoint($this->points["{$next_row_num}:{$col_num}"], $x, $y);
     $data->swingY = $this->fetchPoint($this->points["{$row_num}:{$next_col_num}"], $x, $y);
-    $data->xFactor = round($data->closestPoint['distance'] / $data->swingX['distance'] * $granularity);
-    $data->yFactor = round($data->closestPoint['distance'] / $data->swingY['distance'] * $granularity);
-    $data->wa = ($granularity * $data->closestPoint['value'] + $data->xFactor * $data->swingX['value'] + $data->yFactor * $data->swingY['value']) / ($granularity + $data->xFactor + $data->yFactor);
+    $this->weightedAverage($data);
   }
 
   /** 
@@ -121,6 +119,23 @@ class Points implements PointsInterface {
    return $point;
   }
 
+  /**
+   * Calculate the weighted average value for the point.
+   *
+   * @param stdClass $data
+   *  The data, passed by reference.
+   */
+  private function weightedAverage(&$data) {
+    $accuracy = $this->options['accuracy'];
+    $closest_dist = $data->closestPoint['distance'];
+    $x_factor = round($closest_dist / $data->swingX['distance'] * $accuracy);
+    $y_factor = round($closest_dist / $data->swingY['distance'] * $accuracy);
+    $avg_sum = $accuracy * $data->closestPoint['value'] + 
+               $x_factor * $data->swingX['value'] + 
+               $y_factor * $data->swingY['value']; 
+    $data->wa = $avg_sum / ($accuracy + $x_factor + $y_factor);
+  }
+
 }
 
 
@@ -129,6 +144,7 @@ $a = new Points(
     'grid_size' => 5,
     'x_increm' => 0.5,
     'y_increm' => 0.67,
+    'accuracy' => 10,
   ));
 
 $b = $a->fetch(1.2, 2.62);
